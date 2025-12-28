@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园社团管理系统 - 简化版</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .simple-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .simple-form {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .simple-form input {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .simple-form button {
+            width: 100%;
+            padding: 10px;
+            background: #409EFF;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .simple-form button:hover {
+            background: #66b1ff;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+        }
+        .success { background: #f0f9ff; color: #1890ff; }
+        .error { background: #fff2f0; color: #ff4d4f; }
+    </style>
+</head>
+<body>
+    <div id="app" class="simple-container">
+        <h1>校园社团管理系统</h1>
+        
+        <div v-if="!isLoggedIn" class="simple-form">
+            <h2>{{ isLogin ? '用户登录' : '用户注册' }}</h2>
+            <div id="status-message" v-if="message" :class="messageType">{{ message }}</div>
+            
+            <input v-model="form.username" placeholder="用户名" />
+            <input v-model="form.password" type="password" placeholder="密码" />
+            
+            <div v-if="!isLogin">
+                <input v-model="form.realName" placeholder="真实姓名" />
+                <input v-model="form.phone" placeholder="手机号" />
+                <input v-model="form.email" placeholder="邮箱" />
+            </div>
+            
+            <button @click="submitForm">{{ isLogin ? '登录' : '注册' }}</button>
+            <button @click="toggleForm">{{ isLogin ? '注册账号' : '返回登录' }}</button>
+        </div>
+        
+        <div v-else>
+            <h2>欢迎, {{ userInfo.realName || userInfo.username }}!</h2>
+            <div class="status success">登录成功</div>
+            
+            <h3>用户功能菜单</h3>
+            <ul>
+                <li><a href="#" @click="showFeatureMessage('个人信息')">个人信息</a></li>
+                <li><a href="#" @click="showFeatureMessage('社团浏览')">社团浏览</a></li>
+                <li><a href="#" @click="showFeatureMessage('活动浏览')">活动浏览</a></li>
+                <li><a href="#" @click="showFeatureMessage('我的申请')">我的申请</a></li>
+                <li><a href="#" @click="showFeatureMessage('我的费用')">我的费用</a></li>
+            </ul>
+            
+            <button @click="logout" style="background: #f56c6c;">退出登录</button>
+        </div>
+    </div>
+
+    <!-- 使用更简单的Vue加载方式 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                isLoggedIn: false,
+                isLogin: true,
+                message: '',
+                messageType: '',
+                form: {
+                    username: '',
+                    password: '',
+                    realName: '',
+                    phone: '',
+                    email: ''
+                },
+                userInfo: null
+            },
+            created() {
+                // 检查本地存储的用户信息
+                const token = localStorage.getItem('token');
+                const userInfo = localStorage.getItem('userInfo');
+                
+                if (token && userInfo) {
+                    this.isLoggedIn = true;
+                    this.userInfo = JSON.parse(userInfo);
+                }
+            },
+            methods: {
+                async submitForm() {
+                    if (!this.form.username || !this.form.password) {
+                        this.showMessage('请填写用户名和密码', 'error');
+                        return;
+                    }
+                    
+                    try {
+                        if (this.isLogin) {
+                            // 登录请求
+                            const response = await axios.post('http://localhost:8080/api/user/login', {
+                                username: this.form.username,
+                                password: this.form.password
+                            });
+                            
+                            if (response.data.code === 200) {
+                                const token = response.data.data;
+                                localStorage.setItem('token', token);
+                                
+                                // 获取用户信息
+                                const userResponse = await axios.get('http://localhost:8080/api/user/info', {
+                                    headers: {
+                                        'Authorization': `Bearer ${token}`
+                                    }
+                                });
+                                
+                                if (userResponse.data.code === 200) {
+                                    this.userInfo = userResponse.data.data;
+                                    localStorage.setItem('userInfo', JSON.stringify(this.userInfo));
+                                    this.isLoggedIn = true;
+                                    this.showMessage('登录成功！', 'success');
+                                }
+                            } else {
+                                this.showMessage(response.data.message || '登录失败', 'error');
+                            }
+                        } else {
+                            // 注册请求
+                            if (!this.form.realName || !this.form.phone || !this.form.email) {
+                                this.showMessage('请填写完整信息', 'error');
+                                return;
+                            }
+                            
+                            const response = await axios.post('http://localhost:8080/api/user/register', {
+                                username: this.form.username,
+                                password: this.form.password,
+                                realName: this.form.realName,
+                                phone: this.form.phone,
+                                email: this.form.email,
+                                sex: '男',
+                                userType: 1
+                            });
+                            
+                            if (response.data.code === 200) {
+                                this.showMessage('注册成功！请登录', 'success');
+                                this.toggleForm();
+                            } else {
+                                this.showMessage(response.data.message || '注册失败', 'error');
+                            }
+                        }
+                    } catch (error) {
+                        console.error('请求错误:', error);
+                        this.showMessage('网络错误，请检查后端服务', 'error');
+                    }
+                },
+                
+                toggleForm() {
+                    this.isLogin = !this.isLogin;
+                    this.clearForm();
+                    this.message = '';
+                },
+                
+                clearForm() {
+                    this.form = {
+                        username: '',
+                        password: '',
+                        realName: '',
+                        phone: '',
+                        email: ''
+                    };
+                },
+                
+                showMessage(text, type = 'success') {
+                    this.message = text;
+                    this.messageType = type;
+                    setTimeout(() => {
+                        this.message = '';
+                    }, 5000);
+                },
+                
+                showFeatureMessage(feature) {
+                    this.showMessage(`${feature} 功能正在开发中`, 'success');
+                },
+                
+                logout() {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('userInfo');
+                    this.isLoggedIn = false;
+                    this.userInfo = null;
+                    this.clearForm();
+                    this.showMessage('已退出登录', 'success');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

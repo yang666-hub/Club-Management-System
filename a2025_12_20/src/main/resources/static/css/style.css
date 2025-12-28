@@ -1,0 +1,120 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+}
+
+.el-header {
+    background-color: #fff;
+    color: #333;
+    line-height: 60px;
+    border-bottom: 1px solid #e6e6e6;
+}
+
+.el-aside {
+    color: #333;
+}
+
+.el-dropdown-link {
+    cursor: pointer;
+    color: #409EFF;
+}
+
+/* 登录注册页面样式 */
+.login-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.login-box {
+    width: 400px;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 15px 35px rgba(50, 50, 93, 0.1), 0 5px 15px rgba(0, 0, 0, 0.07);
+}
+
+.login-title {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+    font-size: 24px;
+    font-weight: 500;
+}
+
+/* 表单样式 */
+.form-container {
+    padding: 20px;
+}
+
+.search-form {
+    margin-bottom: 20px;
+}
+
+.table-container {
+    margin-top: 20px;
+}
+
+.dialog-form .el-form-item {
+    margin-bottom: 22px;
+}
+
+/* 按钮样式 */
+.button-group {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.button-group .el-button {
+    margin: 0 10px;
+}
+
+/* 卡片样式 */
+.info-card {
+    margin-bottom: 20px;
+}
+
+/* 分页样式 */
+.pagination-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+/* 状态标签样式 */
+.status-tag {
+    margin-right: 5px;
+}
+
+/* 统计卡片样式 */
+.stat-card {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.stat-card .el-statistic__head {
+    font-size: 14px;
+}
+
+.stat-card .el-statistic__content {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+    .el-aside {
+        width: 180px !important;
+    }
+    
+    .login-box {
+        width: 90%;
+        padding: 20px;
+    }
+}

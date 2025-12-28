@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园社团管理系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-ui@2.15.14/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app">
+        <template v-if="!isLoggedIn">
+            <login-register @login-success="handleLoginSuccess"></login-register>
+        </template>
+        <template v-else>
+            <el-container style="height: 100vh; border: 1px solid #eee">
+                <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
+                    <el-menu :default-openeds="['1', '2', '3']" :default-active="activeMenu">
+                        <el-submenu index="1" v-if="userType >= 1">
+                            <template slot="title"><i class="el-icon-user"></i>用户功能</template>
+                            <el-menu-item index="1-1" @click="navigateTo('user-profile')">个人信息</el-menu-item>
+                            <el-menu-item index="1-2" @click="navigateTo('club-list')">社团浏览</el-menu-item>
+                            <el-menu-item index="1-3" @click="navigateTo('activity-list')">活动浏览</el-menu-item>
+                            <el-menu-item index="1-4" @click="navigateTo('apply-record')">我的申请</el-menu-item>
+                            <el-menu-item index="1-5" @click="navigateTo('fee-record')">我的费用</el-menu-item>
+                        </el-submenu>
+                        <el-submenu index="2" v-if="userType >= 2">
+                            <template slot="title"><i class="el-icon-s-opportunity"></i>社团管理</template>
+                            <el-menu-item index="2-1" @click="navigateTo('club-info')">社团信息</el-menu-item>
+                            <el-menu-item index="2-2" @click="navigateTo('member-management')">成员管理</el-menu-item>
+                            <el-menu-item index="2-3" @click="navigateTo('apply-management')">申请处理</el-menu-item>
+                            <el-menu-item index="2-4" @click="navigateTo('club-activities')">社团活动</el-menu-item>
+                            <el-menu-item index="2-5" @click="navigateTo('notice-management')">通知管理</el-menu-item>
+                            <el-menu-item index="2-6" @click="navigateTo('fee-management')">费用管理</el-menu-item>
+                        </el-submenu>
+                        <el-submenu index="3" v-if="userType >= 3">
+                            <template slot="title"><i class="el-icon-s-tools"></i>系统管理</template>
+                            <el-menu-item index="3-1" @click="navigateTo('user-management')">用户管理</el-menu-item>
+                            <el-menu-item index="3-2" @click="navigateTo('club-type-management')">社团类型管理</el-menu-item>
+                            <el-menu-item index="3-3" @click="navigateTo('system-club-management')">社团管理</el-menu-item>
+                            <el-menu-item index="3-4" @click="navigateTo('system-member-management')">成员管理</el-menu-item>
+                            <el-menu-item index="3-5" @click="navigateTo('system-activity-management')">活动管理</el-menu-item>
+                            <el-menu-item index="3-6" @click="navigateTo('system-notice-management')">通知管理</el-menu-item>
+                            <el-menu-item index="3-7" @click="navigateTo('system-apply-management')">申请管理</el-menu-item>
+                            <el-menu-item index="3-8" @click="navigateTo('system-fee-management')">费用管理</el-menu-item>
+                        </el-submenu>
+                    </el-menu>
+                </el-aside>
+                
+                <el-container>
+                    <el-header style="text-align: right; font-size: 12px">
+                        <el-dropdown>
+                            <span class="el-dropdown-link">
+                                {{ (userInfo && userInfo.realName) || (userInfo && userInfo.username) || '用户' }}
+                                <i class="el-icon-arrow-down el-icon--right"></i>
+                            </span>
+                            <el-dropdown-menu slot="dropdown">
+                                <el-dropdown-item @click.native="logout">退出登录</el-dropdown-item>
+                            </el-dropdown-menu>
+                        </el-dropdown>
+                    </el-header>
+                    
+                    <el-main>
+                        <!-- 动态组件加载 -->
+                        <component :is="currentComponent" :user-info="userInfo" :user-type="userType"></component>
+                    </el-main>
+                </el-container>
+            </el-container>
+        </template>
+    </div>
+
+    <!-- 引入Vue和Element UI - 使用多个CDN作为备用 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script>
+        // 如果第一个CDN失败，尝试第二个
+        if (typeof Vue === 'undefined') {
+            document.write('<script src="https://unpkg.com/vue@2.6.14/dist/vue.js"><\/script>');
+        }
+    </script>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-ui@2.15.14/lib/theme-chalk/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/element-ui@2.15.14/lib/index.js"></script>
+    <script>
+        // 如果Element UI加载失败，尝试备用CDN
+        if (typeof ELEMENT === 'undefined') {
+            document.write('<link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.14/lib/theme-chalk/index.css">');
+            document.write('<script src="https://unpkg.com/element-ui@2.15.14/lib/index.js"><\/script>');
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    <script>
+        // 如果Axios加载失败，尝试备用CDN
+        if (typeof axios === 'undefined') {
+            document.write('<script src="https://unpkg.com/axios@1.6.0/dist/axios.min.js"><\/script>');
+        }
+    </script>
+    
+    <!-- 引入各组件 -->
+    <script src="js/utils/api.js"></script>
+    <script src="js/utils/auth.js"></script>
+    <script src="js/components/LoginRegister.js"></script>
+    <script src="js/components/UserProfile.js"></script>
+    <script src="js/components/ClubList.js"></script>
+    <script src="js/components/ActivityList.js"></script>
+    <script src="js/components/ApplyRecord.js"></script>
+    <script src="js/components/FeeRecord.js"></script>
+    <script src="js/components/ClubInfo.js"></script>
+    <script src="js/components/MemberManagement.js"></script>
+    <script src="js/components/ApplyManagement.js"></script>
+    <script src="js/components/ClubActivities.js"></script>
+    <script src="js/components/NoticeManagement.js"></script>
+    <script src="js/components/FeeManagement.js"></script>
+    <script src="js/components/UserManagement.js"></script>
+    <script src="js/components/ClubTypeManagement.js"></script>
+    <script src="js/components/SystemClubManagement.js"></script>
+    
+    <script>
+        // 确保所有组件加载完成后再初始化应用
+        window.addEventListener('load', function() {
+            console.log('页面完全加载，开始加载app.js...');
+            const script = document.createElement('script');
+            script.src = 'js/app.js';
+            document.body.appendChild(script);
+        });
+    </script>
+</body>
+</html>
